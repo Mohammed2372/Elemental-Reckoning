@@ -1,42 +1,86 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-
 public class StateMachine
 {
     public PlayerState CurrentState { get; private set; }
-
+    private PlayerController player;
+    public StateMachine(PlayerController player)
+    {
+        this.player = player;
+    }
     public void Initialize(PlayerState startingState)
     {
         CurrentState = startingState;
         startingState.Enter();
     }
-
     public void ChangeState(PlayerState newState)
     {
+        if (CurrentState == newState) return;
+
         CurrentState.Exit();
         CurrentState = newState;
         newState.Enter();
+
+        // Debugging
+        Debug.Log($"State changed to: {newState.GetType().Name}");
     }
 }
 public class IdleState : PlayerState
 {
+    private float inputBufferTime = 0.1f;
+    private float inputBufferTimer;
+
     public IdleState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
+        base.Enter();
         player.SetVelocityX(0);
-        player.Animator.Play("idle");
+        player.animator.Play("idle");
     }
 
     public override void HandleInput()
     {
-        if (Input.GetButtonDown("Jump"))
-            stateMachine.ChangeState(player.JumpState);
-        //else if (Input.GetButtonDown("Fire1"))
-            //stateMachine.ChangeState(player.LightAttackState);
-        else if (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0)
-            stateMachine.ChangeState(player.MoveState);
+        // Handle buffered jump input first
+        if (inputBufferTimer > 0)
+        {
+            inputBufferTimer -= Time.deltaTime;
+            if (player.IsGrounded())
+            {
+                stateMachine.ChangeState(player.jumpState);
+                return;
+            }
+        }
+
+        // Check for new jump input
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (player.IsGrounded())
+            {
+                stateMachine.ChangeState(player.jumpState);
+            }
+            else
+            {
+                // Buffer the jump input if not grounded
+                inputBufferTimer = inputBufferTime;
+            }
+            return;
+        }
+
+        // Handle other inputs
+        if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
+        {
+            stateMachine.ChangeState(player.attackState);
+        }
+        else if (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.1f)
+        {
+            stateMachine.ChangeState(player.moveState);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftShift) && player.CanDash)
+        {
+            stateMachine.ChangeState(player.dashState);
+        }
     }
 }
 public class MoveState : PlayerState
@@ -45,83 +89,171 @@ public class MoveState : PlayerState
 
     public override void Enter()
     {
-        player.Animator.Play("run");
+        base.Enter();
+        player.animator.Play("run");
     }
 
     public override void HandleInput()
     {
         float inputX = Input.GetAxisRaw("Horizontal");
+        player.UpdateFacingDirection(inputX);
 
-        // Flip player based on direction
-        if (inputX != 0)
-            player.transform.localScale = new Vector3(Mathf.Sign(inputX), 1, 1);
+        // Handle jump input
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (player.IsGrounded())
+            {
+                stateMachine.ChangeState(player.jumpState);
+                return;
+            }
+        }
 
-        player.SetVelocityX(inputX * player.moveSpeed);
+        // Movement handling
+        if (Mathf.Abs(inputX) > 0.1f)
+        {
+            // Flip player while preserving scale
+            Vector3 scale = player.transform.localScale;
+            scale.x = Mathf.Sign(inputX) * Mathf.Abs(scale.x);
+            player.transform.localScale = scale;
 
-        if (inputX == 0)
-            stateMachine.ChangeState(player.IdleState);
+            player.SetVelocityX(inputX * player.MoveSpeed);
+        }
+        else
+        {
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
 
-        if (Input.GetButtonDown("Jump"))
-            stateMachine.ChangeState(player.JumpState);
-
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-            stateMachine.ChangeState(player.DashState);
-
+        //// Other input handling
+        // attack
         if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
-            stateMachine.ChangeState(player.AttackState);
-
+        {
+            stateMachine.ChangeState(player.attackState);
+        }
+        // dash
+        else if (Input.GetKeyDown(KeyCode.LeftShift) && player.CanDash)
+        {
+            stateMachine.ChangeState(player.dashState);
+        }
     }
 
     public override void PhysicsUpdate()
     {
         if (!player.IsGrounded())
-            stateMachine.ChangeState(player.JumpState);
+        {
+            stateMachine.ChangeState(player.fallState);
+        }
     }
 }
 public class JumpState : PlayerState
 {
-    private bool hasJumped = false;
-
     public JumpState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
-        hasJumped = false;
-        player.Animator.Play("j_up");
+        base.Enter();
+        // Apply jump force once
+        player.SetVelocityY(player.JumpForce);
+        player.animator.Play("j_up");
     }
 
     public override void HandleInput()
     {
-        if (!hasJumped)
-        {
-            player.SetVelocityY(player.jumpForce);
-            hasJumped = true;
-        }
-
+        // Handle horizontal movement while jumping
         float inputX = Input.GetAxisRaw("Horizontal");
-        player.SetVelocityX(inputX * player.moveSpeed);
+        player.SetVelocityX(inputX * player.MoveSpeed);
+        player.UpdateFacingDirection(inputX);
 
+        // Flip sprite direction without changing scale magnitude
         if (inputX != 0)
-            player.transform.localScale = new Vector3(Mathf.Sign(inputX), 1, 1);
-
-        if (player.IsGrounded())
         {
-            stateMachine.ChangeState(player.IdleState);
+            Vector3 scale = player.transform.localScale;
+            scale.x = Mathf.Sign(inputX) * Mathf.Abs(scale.x);
+            player.transform.localScale = scale;
         }
 
-        // handle air attack 
+        // Check for air attack
         if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
         {
-            stateMachine.ChangeState(player.AirAttackState);
+            stateMachine.ChangeState(player.airAttackState);
         }
     }
 
     public override void PhysicsUpdate()
     {
-        if (player.rb.velocity.y < 0) // Falling
+        // Transition to fall state when starting to descend
+        if (player.rb.velocity.y < 0)
         {
-            player.Animator.Play("j_down"); // Play "jump down" animation
+            stateMachine.ChangeState(player.fallState);
         }
+    }
+}
+
+public class FallState : PlayerState
+{
+    public FallState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+
+    public override void Enter()
+    {
+        base.Enter();
+        player.animator.Play("j_down");
+    }
+
+    public override void HandleInput()
+    {
+        // Handle horizontal movement while falling
+        float inputX = Input.GetAxisRaw("Horizontal");
+        player.SetVelocityX(inputX * player.MoveSpeed);
+
+        // Flip sprite direction without changing scale magnitude
+        if (inputX != 0)
+        {
+            Vector3 scale = player.transform.localScale;
+            scale.x = Mathf.Sign(inputX) * Mathf.Abs(scale.x);
+            player.transform.localScale = scale;
+        }
+
+        // Check for air attack
+        if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
+        {
+            stateMachine.ChangeState(player.airAttackState);
+        }
+    }
+
+    public override void PhysicsUpdate()
+    {
+        // Return to idle when landing
+        if (player.IsGrounded())
+        {
+            stateMachine.ChangeState(player.idleState);
+        }
+    }
+}
+
+public class AirAttackState : PlayerState
+{
+    public AirAttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+
+    public override void Enter()
+    {
+        base.Enter();
+        player.animator.Play("air_atk");
+        player.SetVelocityX(0); // Stop horizontal movement during air attack
+    }
+
+    public override void PhysicsUpdate()
+    {
+        // Continue falling during air attack
+        if (player.rb.velocity.y < 0)
+        {
+            stateMachine.ChangeState(player.fallState);
+        }
+    }
+
+    public void AnimationTrigger_EndAttack()
+    {
+        // Return to falling when air attack completes
+        stateMachine.ChangeState(player.fallState);
     }
 }
 public class DashState : PlayerState
@@ -132,26 +264,53 @@ public class DashState : PlayerState
 
     public override void Enter()
     {
-        dashTimeLeft = player.dashTime;
-        player.Animator.Play("Dash");
+        dashTimeLeft = player.DashTime;
+        player.animator.Play("roll"); // Play dash animation
+        player.SetVelocityX(player.transform.localScale.x * player.DashSpeed); // Set dash velocity
+    }
+
+    public override void HandleInput()
+    {
+        // Handle jump input during dash
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            stateMachine.ChangeState(player.jumpState);
+        }
+
+        // Handle attack input during dash
+        if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
+        {
+            stateMachine.ChangeState(player.attackState);
+        }
     }
 
     public override void LogicUpdate()
     {
         dashTimeLeft -= Time.deltaTime;
-        float dir = player.transform.localScale.x;
 
-        player.SetVelocityX(dir * player.dashSpeed);
-
-        if (dashTimeLeft <= 0)
+        // Transition to idleState if dash ends and player is grounded
+        if (dashTimeLeft <= 0 && player.IsGrounded())
         {
-            stateMachine.ChangeState(player.IdleState);
+            stateMachine.ChangeState(player.idleState);
+        }
+
+        // Transition to FallState if player is not grounded and falling
+        if (!player.IsGrounded() && player.rb.velocity.y < 0)
+        {
+            stateMachine.ChangeState(player.fallState);
         }
     }
 
-    public override void HandleInput()
+    public override void PhysicsUpdate()
     {
-        // You can ignore input during dash or interrupt with some logic if needed
+        // Maintain dash velocity
+        player.SetVelocityX(player.transform.localScale.x * player.DashSpeed);
+    }
+
+    public override void Exit()
+    {
+        // Reset velocity when exiting dash
+        player.SetVelocityX(0);
     }
 }
 public class AttackState : PlayerState
@@ -159,34 +318,51 @@ public class AttackState : PlayerState
     private int currentAttackIndex = 0;
     private float comboTimer = 0f;
     private float comboResetTime = 0.8f;
-    private float attackDelayTimer = 0f; // Timer to prevent attacking during animation
-
-    private string[] attackAnimations = { "1_atk", "2_atk", "3_atk" };
     private bool canQueueNextAttack = false;
+    private bool attackInProgress = false;
+    private string[] attackAnimations = { "1_atk", "2_atk", "3_atk" };
+    private attack_point attackPoint;
 
-    public AttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public AttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine)
+    {
+        attackPoint = player.GetComponentInChildren<attack_point>(true);
+        if (attackPoint == null)
+        {
+            Debug.LogError("AttackPoint component not found in player children!");
+        }
+    }
 
     public override void Enter()
     {
-        PlayCurrentAttackAnimation();
+        if (attackPoint == null)
+        {
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+
+        base.Enter();
+        comboTimer = 0f;
+        canQueueNextAttack = false;
+        attackInProgress = true;
+        currentAttackIndex = 0;
+        PlayCurrentAttack();
     }
 
     public override void HandleInput()
     {
-        // Prevent input if the attack delay timer is active
-        if (attackDelayTimer > 0) return;
+        if (!attackInProgress) return;
 
-        if (Input.GetKey(KeyCode.J) || Input.GetMouseButton(0)) // Check if the attack button is being held
+        if (canQueueNextAttack && (Input.GetKey(KeyCode.J) || Input.GetMouseButton(0)))
         {
-            if (canQueueNextAttack && currentAttackIndex < attackAnimations.Length - 1)
+            if (currentAttackIndex < attackAnimations.Length - 1)
             {
-                // Check if the player has acquired the skill for the next attack
                 if ((currentAttackIndex == 0 && player.HasSecondAttackSkill) ||
                     (currentAttackIndex == 1 && player.HasThirdAttackSkill))
                 {
                     currentAttackIndex++;
                     canQueueNextAttack = false;
-                    PlayCurrentAttackAnimation();
+                    PlayCurrentAttack();
+                    return; // Important to prevent multiple attacks in one frame
                 }
             }
         }
@@ -194,92 +370,130 @@ public class AttackState : PlayerState
 
     public override void LogicUpdate()
     {
-        // Update the attack delay timer
-        if (attackDelayTimer > 0)
-        {
-            attackDelayTimer -= Time.deltaTime;
-        }
+        if (!attackInProgress) return;
 
+        base.LogicUpdate();
         comboTimer += Time.deltaTime;
 
-        if (comboTimer > comboResetTime)
+        // Only check animation finish if we're still in attack state
+        if (attackInProgress && AnimationFinished(attackAnimations[currentAttackIndex]))
         {
-            ResetCombo();
-            stateMachine.ChangeState(player.IdleState);
+            if (!canQueueNextAttack || comboTimer > comboResetTime)
+            {
+                ResetCombo();
+                stateMachine.ChangeState(player.idleState);
+            }
         }
     }
 
+    private void PlayCurrentAttack()
+    {
+        if (attackPoint == null)
+        {
+            stateMachine.ChangeState(player.idleState);
+            return;
+        }
+
+        comboTimer = 0f;
+        player.animator.Play(attackAnimations[currentAttackIndex]);
+        player.SetVelocityX(0);
+        attackPoint.StartAttack(currentAttackIndex);
+    }
     public void AnimationTrigger_CanQueueNext()
     {
+        if (!attackInProgress) return;
         canQueueNextAttack = true;
     }
-
     public void AnimationTrigger_EndAttack()
     {
-        if (!canQueueNextAttack || currentAttackIndex >= attackAnimations.Length - 1)
+        if (!attackInProgress) return;
+
+        attackInProgress = false;
+        attackPoint?.EndAttack();
+
+        if (!canQueueNextAttack || currentAttackIndex >= attackAnimations.Length - 1 || comboTimer > comboResetTime)
         {
             ResetCombo();
-            stateMachine.ChangeState(player.IdleState);
+            stateMachine.ChangeState(player.idleState);
         }
     }
-
-    private void PlayCurrentAttackAnimation()
-    {
-        comboTimer = 0f;
-
-        // Play the current attack animation
-        string animationName = attackAnimations[currentAttackIndex];
-        player.Animator.Play(animationName);
-
-        // Set the attack delay timer based on the animation duration
-        attackDelayTimer = GetAnimationClipLength(animationName);
-    }
-
     private void ResetCombo()
     {
         currentAttackIndex = 0;
         comboTimer = 0f;
         canQueueNextAttack = false;
+        attackInProgress = false;
+        attackPoint?.EndAttack();
     }
-
-    private float GetAnimationClipLength(string animationName)
+    public override void Exit()
     {
-        // Retrieve the animation clip length from the Animator
-        AnimationClip[] clips = player.Animator.runtimeAnimatorController.animationClips;
-        foreach (AnimationClip clip in clips)
-        {
-            if (clip.name == animationName)
-            {
-                return clip.length;
-            }
-        }
-        return 0f; // Default to 0 if the animation clip is not found
+        base.Exit();
+        attackPoint?.EndAttack();
     }
 }
-public class AirAttackState : PlayerState
+public class TakeHitState : PlayerState
 {
-    public AirAttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    private bool animationCompleted = false;
+
+    public TakeHitState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
-        player.Animator.Play("air_atk"); // Play air attack animation
-        player.SetVelocityY(0); // Optional: Stop vertical movement during attack
+        animationCompleted = false;
+        player.animator.Play("take_hit"); // Play "take hit" animation
     }
 
     public override void HandleInput()
     {
-        // No additional input handling during air attack
+        // No input handling during "take hit"
     }
 
     public override void LogicUpdate()
     {
-        if (player.IsGrounded())
+        // Transition to DeathState if health is zero
+        if (player.Health <= 0)
         {
-            stateMachine.ChangeState(player.IdleState); // Transition to idle when grounded
+            stateMachine.ChangeState(player.deathState);
         }
-        else if (player.rb.velocity.y < 0)
+
+        // Transition to idleState or FallState after animation completes
+        if (animationCompleted)
         {
-            stateMachine.ChangeState(player.JumpState); // Transition back to jump state if still in air
+            if (player.IsGrounded())
+            {
+                stateMachine.ChangeState(player.idleState);
+            }
+            else
+            {
+                stateMachine.ChangeState(player.fallState);
+            }
         }
+    }
+
+    public void AnimationTrigger_EndTakeHit()
+    {
+        // Called when the "take hit" animation ends
+        animationCompleted = true;
+    }
+}
+public class DeathState : PlayerState
+{
+    public DeathState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+
+    public override void Enter()
+    {
+        player.animator.Play("death"); // Play "death" animation
+        player.SetVelocityX(0); // Stop movement
+        player.SetVelocityY(0); // Stop vertical movement
+    }
+
+    public override void HandleInput()
+    {
+        // Disable all input during death
+    }
+
+    public override void LogicUpdate()
+    {
+        // No transitions from DeathState
     }
 }

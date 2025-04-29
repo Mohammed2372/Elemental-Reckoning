@@ -1,7 +1,11 @@
+using UnityEngine;
+
 public abstract class PlayerState
 {
     protected PlayerController player;
     protected StateMachine stateMachine;
+    protected float stateTimer;
+    protected bool animationTriggerCalled;
 
     public PlayerState(PlayerController player, StateMachine stateMachine)
     {
@@ -9,9 +13,33 @@ public abstract class PlayerState
         this.stateMachine = stateMachine;
     }
 
-    public virtual void Enter() { }
+    public virtual void Enter()
+    {
+        stateTimer = 0;
+        animationTriggerCalled = false;
+        Debug.Log($"Entering {GetType().Name}");
+    }
+
+    public virtual void Exit()
+    {
+        // Clean up any state-specific things
+    }
+
     public virtual void HandleInput() { }
-    public virtual void LogicUpdate() { }
+    public virtual void LogicUpdate()
+    {
+        stateTimer += Time.deltaTime;
+    }
     public virtual void PhysicsUpdate() { }
-    public virtual void Exit() { }
+
+    protected bool AnimationFinished(string animationName)
+    {
+        AnimatorStateInfo stateInfo = player.animator.GetCurrentAnimatorStateInfo(0);
+        return stateInfo.IsName(animationName) && stateInfo.normalizedTime >= 1f;
+    }
+
+    protected bool IsAnimationPlaying(string animationName)
+    {
+        return player.animator.GetCurrentAnimatorStateInfo(0).IsName(animationName);
+    }
 }
