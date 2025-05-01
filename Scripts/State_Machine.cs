@@ -118,7 +118,7 @@ public class JumpState : PlayerState
 
     public override void PhysicsUpdate()
     {
-        if (player.rb.velocity.y < 0) // Falling
+        if (player.rb.linearVelocity.y < 0) // Falling
         {
             player.Animator.Play("j_down"); // Play "jump down" animation
         }
@@ -277,7 +277,7 @@ public class AirAttackState : PlayerState
         {
             stateMachine.ChangeState(player.IdleState); // Transition to idle when grounded
         }
-        else if (player.rb.velocity.y < 0)
+        else if (player.rb.linearVelocity.y < 0)
         {
             stateMachine.ChangeState(player.JumpState); // Transition back to jump state if still in air
         }
