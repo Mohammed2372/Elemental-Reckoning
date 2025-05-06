@@ -3,7 +3,7 @@ guid: 2a6380793088d8e47be5c4200ce053e4
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -43,12 +43,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -67,7 +67,7 @@ TextureImporter:
   swizzle: 50462976
   cookieLightType: 0
   platformSettings:
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -80,7 +80,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: WebGL
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -93,7 +93,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -106,7 +106,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -119,7 +119,7 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
+  - serializedVersion: 4
     buildTarget: Server
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -134,8 +134,273 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: Golem_1_die_0
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 0
+        width: 38
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5396f377e0082a94b9d6455c215f1370
+      internalID: -699216358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_1
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 0
+        width: 39
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5274916b63aca3f4381c4a93a8cda104
+      internalID: 779409090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_2
+      rect:
+        serializedVersion: 2
+        x: 205
+        y: 0
+        width: 41
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cfb9a51400fd11a44bd5a4e2b2d1cd58
+      internalID: -324361245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_4
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 0
+        width: 48
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1fcf9107bb844714385389f048413d00
+      internalID: -691201939
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_6
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 0
+        width: 55
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4eecafe84409a0740ba9551ea0738667
+      internalID: -1992885334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_7
+      rect:
+        serializedVersion: 2
+        x: 464
+        y: 0
+        width: 61
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e89339758873d3e41b4167381d685bbd
+      internalID: -1767893638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_8
+      rect:
+        serializedVersion: 2
+        x: 553
+        y: 0
+        width: 62
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 34034a919228da6499d1c2c06deb9ca7
+      internalID: -2016664203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_22
+      rect:
+        serializedVersion: 2
+        x: 644
+        y: 0
+        width: 63
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 851d9fcb00581af49a8fd8635b161e79
+      internalID: 428223944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_24
+      rect:
+        serializedVersion: 2
+        x: 734
+        y: 0
+        width: 66
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 60081b5af7fc53e4bb7756c6f1355bbe
+      internalID: -219934319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_26
+      rect:
+        serializedVersion: 2
+        x: 824
+        y: 0
+        width: 64
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 372cde752434cbd409b3daf900618e7d
+      internalID: -262983795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_30
+      rect:
+        serializedVersion: 2
+        x: 915
+        y: 0
+        width: 62
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88607e1b8abe3904190e2e1866c0241b
+      internalID: 650633851
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Golem_1_die_34
+      rect:
+        serializedVersion: 2
+        x: 1026
+        y: 0
+        width: 30
+        height: 38
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65969ad72dbff3c4f9761ae8c069a342
+      internalID: -1292161493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
+    customData: 
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
@@ -145,7 +410,46 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Golem_1_die_0: -699216358
+      Golem_1_die_1: 779409090
+      Golem_1_die_10: -363209565
+      Golem_1_die_11: 2057664844
+      Golem_1_die_12: -1346677267
+      Golem_1_die_13: -1109734789
+      Golem_1_die_14: 989603599
+      Golem_1_die_15: 1663291042
+      Golem_1_die_16: -152667767
+      Golem_1_die_17: 1993232243
+      Golem_1_die_18: -1697403358
+      Golem_1_die_19: 1835116352
+      Golem_1_die_2: -324361245
+      Golem_1_die_20: -1413505446
+      Golem_1_die_21: -370290601
+      Golem_1_die_22: 428223944
+      Golem_1_die_23: -1132031759
+      Golem_1_die_24: -219934319
+      Golem_1_die_25: -974399748
+      Golem_1_die_26: -262983795
+      Golem_1_die_27: -750899024
+      Golem_1_die_28: -873003992
+      Golem_1_die_29: 358480079
+      Golem_1_die_3: -979574268
+      Golem_1_die_30: 650633851
+      Golem_1_die_31: 1704148886
+      Golem_1_die_32: -181501372
+      Golem_1_die_33: -987965301
+      Golem_1_die_34: -1292161493
+      Golem_1_die_4: -691201939
+      Golem_1_die_5: -1533598616
+      Golem_1_die_6: -1992885334
+      Golem_1_die_7: -1767893638
+      Golem_1_die_8: -2016664203
+      Golem_1_die_9: 1629604899
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

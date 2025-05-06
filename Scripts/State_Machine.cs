@@ -181,8 +181,10 @@ public class JumpState : PlayerState
 
     public override void PhysicsUpdate()
     {
+
         // Transition to fall state when starting to descend
         if (player.rb.velocity.y < 0)
+
         {
             stateMachine.ChangeState(player.fallState);
         }
@@ -455,7 +457,6 @@ public class TakeHitState : PlayerState
         {
             stateMachine.ChangeState(player.deathState);
         }
-
         // Transition to idleState or FallState after animation completes
         if (animationCompleted)
         {

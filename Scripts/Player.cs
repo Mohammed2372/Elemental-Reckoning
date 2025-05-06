@@ -116,12 +116,12 @@ public class PlayerController : MonoBehaviour
 
     public void SetVelocityX(float x)
     {
-        rb.velocity = new Vector2(x, rb.velocity.y);
+        rb.linearVelocity = new Vector2(x, rb.linearVelocity.y);
     }
 
     public void SetVelocityY(float y)
     {
-        rb.velocity = new Vector2(rb.velocity.x, y);
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, y);
     }
 
     public void SetVelocity(Vector2 velocity)
