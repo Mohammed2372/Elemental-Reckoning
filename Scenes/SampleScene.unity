@@ -227,7 +227,7 @@ GameObject:
   - component: {fileID: 895172223}
   - component: {fileID: 895172222}
   - component: {fileID: 895172221}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Static Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -381,6 +381,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5870149081182700974, guid: 52ea32a3a32ed224dae363ec95ccac12, type: 3}
+      propertyPath: dashSpeed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5870149081182700974, guid: 52ea32a3a32ed224dae363ec95ccac12, type: 3}
+      propertyPath: fastFallSpeed
+      value: 13
+      objectReference: {fileID: 0}
     - target: {fileID: 7458511684976088307, guid: 52ea32a3a32ed224dae363ec95ccac12, type: 3}
       propertyPath: m_Name
       value: Player

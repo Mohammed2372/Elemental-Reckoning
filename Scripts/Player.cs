@@ -9,11 +9,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float airControlMultiplier = 0.8f;
     [SerializeField] private float coyoteTime = 0.1f;
     [SerializeField] private float jumpBufferTime = 0.1f;
+    [SerializeField] private float fastFallSpeed = 20f;
 
     [Header("Dash Settings")]
     [SerializeField] private float dashSpeed = 20f;
-    [SerializeField] private float dashTime = 0.2f;
     [SerializeField] private float dashCooldown = 1f;
+    private float dashTime = 0.5f;
     private float lastDashTime = -100f;
 
     [Header("Combat Settings")]
@@ -58,11 +59,13 @@ public class PlayerController : MonoBehaviour
     public bool HasThirdAttackSkill => hasThirdAttackSkill;
     public int Health => currentHealth;
     public bool IsFacingRight => isFacingRight;
+    public float FastFallSpeed => fastFallSpeed;
 
     // Input buffering
     private float lastJumpInputTime;
     private float lastGroundedTime;
     private bool jumpInputConsumed = false;
+    private attack_point attackPoint; // Assuming you have an AttackPoint script or similar
 
     private void Awake()
     {
@@ -164,24 +167,28 @@ public class PlayerController : MonoBehaviour
         lastJumpInputTime = Time.time;
     }
 
-    public void FlipSprite(bool faceRight)
-    {
-        spriteRenderer.flipX = !faceRight;
-    }
     public void UpdateFacingDirection(float moveInput)
     {
-        // Only flip if there's movement input
-        if (moveInput == 0) return;
+        if (Mathf.Abs(moveInput) < 0.1f) return;
 
         bool shouldFaceRight = moveInput > 0;
 
-        // Only flip if direction changes
         if (shouldFaceRight != isFacingRight)
         {
             isFacingRight = shouldFaceRight;
-            spriteRenderer.flipX = !isFacingRight;
+            // Simply flip the sprite based on direction
+            spriteRenderer.flipX = !shouldFaceRight;
+
+            // Update attack point position if it exists
+            if (attackPoint != null)
+            {
+                Vector3 localPos = attackPoint.transform.localPosition;
+                localPos.x = Mathf.Abs(localPos.x) * (isFacingRight ? 1 : -1);
+                attackPoint.transform.localPosition = localPos;
+            }
         }
     }
+
     public void TakeDamage(int damage)
     {
         if (stateMachine.CurrentState == deathState) return;
@@ -222,28 +229,42 @@ public class PlayerController : MonoBehaviour
 
     #region Animation Events
 
+    [SerializeField]
     public void AnimationTrigger_CanQueueNext()
     {
+        Debug.Log("Animation Event: Can Queue Next"); // Debug log to verify it's being called
         if (stateMachine.CurrentState is AttackState attackState)
         {
             attackState.AnimationTrigger_CanQueueNext();
         }
     }
 
+    [SerializeField]
     public void AnimationTrigger_EndAttack()
     {
-        if (stateMachine.CurrentState is AttackState attackState)
+        Debug.Log("Animation Event: End Attack"); // Debug log to verify it's being called
+        if (stateMachine.CurrentState is AirAttackState airAttackState)
+        {
+            airAttackState.AnimationTrigger_EndAttack();
+            if (!IsGrounded())
+            {
+                stateMachine.ChangeState(fallState);
+            }
+            else
+            {
+                stateMachine.ChangeState(idleState);
+            }
+        }
+        else if (stateMachine.CurrentState is AttackState attackState)
         {
             attackState.AnimationTrigger_EndAttack();
         }
-        else if (stateMachine.CurrentState is AirAttackState airAttackState)
-        {
-            airAttackState.AnimationTrigger_EndAttack();
-        }
     }
 
+    [SerializeField]
     public void AnimationTrigger_EndTakeHit()
     {
+        Debug.Log("Animation Event: End Take Hit"); // Debug log to verify it's being called
         if (stateMachine.CurrentState is TakeHitState takeHitState)
         {
             takeHitState.AnimationTrigger_EndTakeHit();

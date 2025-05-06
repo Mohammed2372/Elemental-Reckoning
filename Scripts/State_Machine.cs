@@ -111,11 +111,7 @@ public class MoveState : PlayerState
         // Movement handling
         if (Mathf.Abs(inputX) > 0.1f)
         {
-            // Flip player while preserving scale
-            Vector3 scale = player.transform.localScale;
-            scale.x = Mathf.Sign(inputX) * Mathf.Abs(scale.x);
-            player.transform.localScale = scale;
-
+            // Remove the scale-based flipping
             player.SetVelocityX(inputX * player.MoveSpeed);
         }
         else
@@ -159,18 +155,11 @@ public class JumpState : PlayerState
 
     public override void HandleInput()
     {
-        // Handle horizontal movement while jumping
         float inputX = Input.GetAxisRaw("Horizontal");
         player.SetVelocityX(inputX * player.MoveSpeed);
         player.UpdateFacingDirection(inputX);
 
-        // Flip sprite direction without changing scale magnitude
-        if (inputX != 0)
-        {
-            Vector3 scale = player.transform.localScale;
-            scale.x = Mathf.Sign(inputX) * Mathf.Abs(scale.x);
-            player.transform.localScale = scale;
-        }
+        // Remove the scale-based flipping
 
         // Check for air attack
         if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
@@ -191,32 +180,51 @@ public class JumpState : PlayerState
 
 public class FallState : PlayerState
 {
+    private bool isFastFalling = false;
+
     public FallState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
         base.Enter();
+        isFastFalling = false;
         player.animator.Play("j_down");
     }
 
     public override void HandleInput()
     {
-        // Handle horizontal movement while falling
         float inputX = Input.GetAxisRaw("Horizontal");
-        player.SetVelocityX(inputX * player.MoveSpeed);
-
-        // Flip sprite direction without changing scale magnitude
-        if (inputX != 0)
-        {
-            Vector3 scale = player.transform.localScale;
-            scale.x = Mathf.Sign(inputX) * Mathf.Abs(scale.x);
-            player.transform.localScale = scale;
-        }
+        player.SetVelocityX(inputX * player.MoveSpeed * 0.5f);
+        player.UpdateFacingDirection(inputX);
 
         // Check for air attack
         if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
         {
             stateMachine.ChangeState(player.airAttackState);
+            return;
+        }
+
+        // Update fast fall state
+        isFastFalling = Input.GetKey(KeyCode.S);
+    }
+
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+        
+        // Apply appropriate fall speed
+        if (isFastFalling)
+        {
+            player.SetVelocityY(-player.FastFallSpeed);
+        }
+        else
+        {
+            // Use default gravity/fall speed
+            float currentVelocityY = player.rb.velocity.y;
+            if (currentVelocityY < -player.MoveSpeed) // Cap the fall speed
+            {
+                player.SetVelocityY(-player.MoveSpeed);
+            }
         }
     }
 
@@ -228,32 +236,75 @@ public class FallState : PlayerState
             stateMachine.ChangeState(player.idleState);
         }
     }
+
+    public override void Exit()
+    {
+        base.Exit();
+        isFastFalling = false;
+    }
 }
 
 public class AirAttackState : PlayerState
 {
+    private bool isAnimationFinished = false;
+    private float freezeTime = 0.4f;
+    private float freezeTimer = 0f;
+
     public AirAttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
         base.Enter();
+        
+        isAnimationFinished = false;
+        freezeTimer = 0f;
         player.animator.Play("air_atk");
-        player.SetVelocityX(0); // Stop horizontal movement during air attack
+        player.SetVelocityX(0);
+        player.SetVelocityY(0);
+    }
+
+    public override void HandleInput()
+    {
+        // Only allow horizontal movement during attack
+        float inputX = Input.GetAxisRaw("Horizontal");
+        player.SetVelocityX(inputX * player.MoveSpeed * 0.5f);
+    }
+
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+        freezeTimer += Time.deltaTime;
+
+        if (freezeTimer <= freezeTime)
+        {
+            // Keep player frozen during attack
+            player.SetVelocityX(0);
+            player.SetVelocityY(0);
+        }
+        else if (isAnimationFinished)
+        {
+            // Transition to fall state after animation ends
+            stateMachine.ChangeState(player.fallState);
+        }
     }
 
     public override void PhysicsUpdate()
     {
-        // Continue falling during air attack
-        if (player.rb.velocity.y < 0)
+        if (player.IsGrounded())
         {
-            stateMachine.ChangeState(player.fallState);
+            stateMachine.ChangeState(player.idleState);
         }
     }
 
     public void AnimationTrigger_EndAttack()
     {
-        // Return to falling when air attack completes
-        stateMachine.ChangeState(player.fallState);
+        isAnimationFinished = true;
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+        isAnimationFinished = false;
     }
 }
 public class DashState : PlayerState
@@ -264,9 +315,14 @@ public class DashState : PlayerState
 
     public override void Enter()
     {
+        base.Enter();
         dashTimeLeft = player.DashTime;
         player.animator.Play("roll"); // Play dash animation
-        player.SetVelocityX(player.transform.localScale.x * player.DashSpeed); // Set dash velocity
+
+        // set dash velocity based on the player's facing direction
+        float dash_direction = player.IsFacingRight ? 1f : -1f;
+        player.SetVelocityX(dash_direction * player.DashSpeed); // Set dash velocity
+        // player.SetVelocityX(dash_direction * player.transform.localScale.x * player.DashSpeed); // Set dash velocity
     }
 
     public override void HandleInput()
@@ -291,20 +347,25 @@ public class DashState : PlayerState
         // Transition to idleState if dash ends and player is grounded
         if (dashTimeLeft <= 0 && player.IsGrounded())
         {
-            stateMachine.ChangeState(player.idleState);
-        }
-
-        // Transition to FallState if player is not grounded and falling
-        if (!player.IsGrounded() && player.rb.velocity.y < 0)
-        {
-            stateMachine.ChangeState(player.fallState);
+            // check if player is grounded before changing state
+            if (player.IsGrounded())
+            {
+                stateMachine.ChangeState(player.idleState);
+            }
+            else
+            {
+                // If not grounded, transition to fall state
+                stateMachine.ChangeState(player.fallState);
+            }
         }
     }
 
     public override void PhysicsUpdate()
     {
-        // Maintain dash velocity
-        player.SetVelocityX(player.transform.localScale.x * player.DashSpeed);
+        // Maintain dash velocity in correct direction
+        float dash_direction = player.IsFacingRight ? 1f : -1f;
+        player.SetVelocityX(dash_direction * player.DashSpeed);
+        // player.SetVelocityX(dash_direction * player.transform.localScale.x * player.DashSpeed);
     }
 
     public override void Exit()
