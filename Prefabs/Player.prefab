@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9104809343495079781}
   - component: {fileID: 5150680645474487289}
+  - component: {fileID: 6561345814695463161}
   m_Layer: 6
   m_Name: attack point
   m_TagString: Untagged
@@ -67,6 +68,24 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.1068908
+--- !u!114 &6561345814695463161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6483100583621515244}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13d8f76c88094364cabffa04e60d374c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 10
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  attackSize: {x: 0.7, y: 0.64}
+  offset: {x: 0, y: 0}
 --- !u!1 &7458511684976088307
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,16 +187,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cde24b83d3560d408d779aa20c5bc1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 7897093656930800737}
-  Animator: {fileID: 3823649093062547549}
   moveSpeed: 5
-  jumpForce: 12
-  dashSpeed: 20
-  dashTime: 0.2
+  jumpForce: 15
+  airControlMultiplier: 0
+  coyoteTime: 0.1
+  jumpBufferTime: 0.1
+  dashSpeed: 10
+  dashTime: 0.5
+  dashCooldown: 1
+  maxHealth: 100
+  currentHealth: 0
+  hasSecondAttackSkill: 0
+  hasThirdAttackSkill: 0
   groundLayer:
     serializedVersion: 2
-    m_Bits: 191
-  groundCheckDistance: 0.1
+    m_Bits: 8
+  groundCheckDistance: 1.92
+  groundCheckSize: {x: 0.5, y: 0.1}
+  rb: {fileID: 7897093656930800737}
+  animator: {fileID: 0}
 --- !u!50 &7897093656930800737
 Rigidbody2D:
   serializedVersion: 4
@@ -190,10 +218,10 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 3
+  m_GravityScale: 5
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
