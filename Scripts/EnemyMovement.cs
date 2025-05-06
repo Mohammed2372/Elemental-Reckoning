@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Pathfinding;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -10,103 +10,56 @@ public class EnemyMovement : MonoBehaviour
     private Animator animator;
     private EnemyPathfinding pathfinding;
 
-    public EnemyAI.EnemyType enemyType = EnemyAI.EnemyType.Walking;
     public float maxSpeed = 2.5f;
-    public float baseSpeed = 400f;
-    private float speed;
-
-    private int currentWaypoint = 0;
-    private bool reachedEndOfPath = false;
     public float nextWaypointDistance = 0.5f;
 
-    // Offset the final path point to be slightly to the left/right of the target
-    public float pathOffsetX = 0.5f;
+    private int currentWaypoint = 0;
+    private Path currentPath;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         pathfinding = GetComponent<EnemyPathfinding>();
-        speed = baseSpeed;
     }
 
-void FixedUpdate()
-{
-    Path path = pathfinding.CurrentPath;
-    Transform target = pathfinding.Target;
-
-    if (path == null || target == null || path.vectorPath.Count == 0)
-        return;
-
-   
-
-   if (currentWaypoint >= path.vectorPath.Count)
-{
-    currentWaypoint = path.vectorPath.Count - 1;
-    if (currentWaypoint < 0)
-        return;
-
-   
-    rb.linearVelocity = Vector2.zero;
-    animator.SetFloat("speed", 0);
-    return;
-}
-
-    Vector2 direction = ((Vector2)path.vectorPath[currentWaypoint] - rb.position).normalized;
-    if (enemyType == EnemyAI.EnemyType.Walking)
-        direction = new Vector2(direction.x, 0);
-
-    // Flip the enemy to face movement direction
-    if (direction.x != 0)
+    void FixedUpdate()
     {
-        Vector3 scale = transform.localScale;
-        scale.x = Mathf.Sign(direction.x) * Mathf.Abs(scale.x);
-        transform.localScale = scale;
-    }
+        currentPath = pathfinding.CurrentPath;
+        if (currentPath == null || currentPath.vectorPath.Count == 0)
+            return;
 
-    Vector2 force = direction * speed * Time.fixedDeltaTime;
-    rb.AddForce(force);
-
-    Vector2 clampedVelocity = rb.linearVelocity;
-    clampedVelocity.x = Mathf.Clamp(clampedVelocity.x, -maxSpeed, maxSpeed);
-    rb.linearVelocity = new Vector2(clampedVelocity.x, rb.linearVelocity.y);
-
-    float distanceToWaypoint = Vector2.Distance(rb.position, path.vectorPath[currentWaypoint]);
-    if (distanceToWaypoint < nextWaypointDistance)
-    {
-        currentWaypoint++;
-    }
-
-    HandleSlopeAndRotation();
-    animator.SetFloat("speed", rb.linearVelocity.magnitude);
-}
-
-
-    void HandleSlopeAndRotation()
-    {
-        if (enemyType == EnemyAI.EnemyType.Walking)
+        if (currentWaypoint >= currentPath.vectorPath.Count)
         {
-            Vector2 origin = rb.position + Vector2.down * 2.4f;
-            float radius = 0.3f;
-            float castDistance = 0.1f;
-            int groundMask = LayerMask.GetMask("Ground");
-
-            RaycastHit2D hit = Physics2D.CircleCast(origin, radius, Vector2.down, castDistance, groundMask);
-            if (hit.collider != null)
-            {
-                Vector2 normal = hit.normal;
-                float angleFromUp = Vector2.Angle(normal, Vector2.up);
-                speed = angleFromUp > 1f ? 1000f : baseSpeed;
-
-                float angle = Mathf.Atan2(normal.y, normal.x) * Mathf.Rad2Deg;
-                transform.rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
-            }
+            rb.velocity = Vector2.zero;
+            animator.SetFloat("speed", 0f);
+            return;
         }
-        else
+
+        Vector2 targetPos = currentPath.vectorPath[currentWaypoint];
+        Vector2 direction = (targetPos - rb.position).normalized;
+
+        // Walking enemies move only on the X axis
+        Vector2 desiredVelocity = new Vector2(direction.x * maxSpeed, rb.velocity.y);
+        rb.velocity = desiredVelocity;
+
+        float distance = Vector2.Distance(rb.position, targetPos);
+        if (distance < nextWaypointDistance)
         {
-            transform.rotation = Quaternion.identity;
+            currentWaypoint++;
         }
+
+        // Flip sprite to face movement direction
+        if (direction.x != 0)
+        {
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Sign(direction.x) * Mathf.Abs(scale.x);
+            transform.localScale = scale;
+        }
+
+        animator.SetFloat("speed", Mathf.Abs(rb.velocity.x));
     }
+
     public void ResetWaypoint()
     {
         currentWaypoint = 0;

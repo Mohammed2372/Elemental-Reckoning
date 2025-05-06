@@ -4,11 +4,12 @@ using UnityEngine;
 [RequireComponent(typeof(EnemyPathfinding))]
 public class EnemyAttack : MonoBehaviour
 {
+    [Header("Attack Settings")]
     public float attackRange = 6f;
     public float attackCooldown = 10f;
     public int attackDamage = 10;
 
-    private float lastAttackTime = 0f;
+    private float lastAttackTime = -Mathf.Infinity;
     private Animator animator;
     private EnemyPathfinding pathfinding;
 
@@ -23,25 +24,26 @@ public class EnemyAttack : MonoBehaviour
         Transform target = pathfinding.Target;
         if (target == null) return;
 
-        float distance = Vector2.Distance(transform.position, target.position);
-        if (distance <= attackRange && Time.time >= lastAttackTime + attackCooldown)
+        float distanceToTarget = Vector2.Distance(transform.position, target.position);
+        bool canAttack = Time.time >= lastAttackTime + attackCooldown;
+
+        if (distanceToTarget <= attackRange && canAttack)
         {
             Attack();
             lastAttackTime = Time.time;
         }
-      
     }
 
     void Attack()
     {
         animator.SetTrigger("attack");
 
-        // Optional: Deal damage
+        // Optional: Deal damage to player if within range
         /*
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange, LayerMask.GetMask("Player"));
         foreach (Collider2D hit in hits)
         {
-            var health = hit.GetComponent<PlayerHealth>();
+            PlayerHealth health = hit.GetComponent<PlayerHealth>();
             if (health != null)
             {
                 health.TakeDamage(attackDamage);
