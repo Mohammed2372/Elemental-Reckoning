@@ -16,8 +16,12 @@ public class EnemyMovement : MonoBehaviour
     private int currentWaypoint = 0;
     private Path currentPath;
 
+    private int health = 100;
+    private int currentHealth;
+
     void Start()
     {
+        currentHealth = health;
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         pathfinding = GetComponent<EnemyPathfinding>();
@@ -63,5 +67,15 @@ public class EnemyMovement : MonoBehaviour
     public void ResetWaypoint()
     {
         currentWaypoint = 0;
+    }
+    
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+        Debug.Log("Enemy took " + damage + " damage. Current health: " + currentHealth);
+        if(currentHealth <= 0)
+        {
+            Destroy(gameObject);
+        }
     }
 }

@@ -4,8 +4,8 @@ using System;
 public class StateMachine
 {
     public PlayerState CurrentState { get; private set; }
-    private PlayerController player;
-    public StateMachine(PlayerController player)
+    private Player player;
+    public StateMachine(Player player)
     {
         this.player = player;
     }
@@ -21,17 +21,15 @@ public class StateMachine
         CurrentState.Exit();
         CurrentState = newState;
         newState.Enter();
-
-        // Debugging
-        Debug.Log($"State changed to: {newState.GetType().Name}");
     }
 }
+
 public class IdleState : PlayerState
 {
     private float inputBufferTime = 0.1f;
     private float inputBufferTimer;
 
-    public IdleState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public IdleState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
@@ -85,7 +83,7 @@ public class IdleState : PlayerState
 }
 public class MoveState : PlayerState
 {
-    public MoveState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public MoveState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
@@ -143,7 +141,7 @@ public class MoveState : PlayerState
 }
 public class JumpState : PlayerState
 {
-    public JumpState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public JumpState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
@@ -184,7 +182,7 @@ public class FallState : PlayerState
 {
     private bool isFastFalling = false;
 
-    public FallState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public FallState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
@@ -221,8 +219,12 @@ public class FallState : PlayerState
         }
         else
         {
-            // Use default gravity/fall speed
+            // Use default gravity/fall speed with multiplier
             float currentVelocityY = player.rb.velocity.y;
+            if (currentVelocityY < 0)
+            {
+                player.rb.velocity += Vector2.up * Physics2D.gravity.y * (player.FallMultiplier - 1) * Time.deltaTime;
+            }
             if (currentVelocityY < -player.MoveSpeed) // Cap the fall speed
             {
                 player.SetVelocityY(-player.MoveSpeed);
@@ -249,10 +251,18 @@ public class FallState : PlayerState
 public class AirAttackState : PlayerState
 {
     private bool isAnimationFinished = false;
-    private float freezeTime = 0.4f;
+    private float freezeTime = 0.2f; // Reduced freeze time for more responsive air attacks
     private float freezeTimer = 0f;
+    private attack_point attackPoint;
 
-    public AirAttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public AirAttackState(Player player, StateMachine stateMachine) : base(player, stateMachine) 
+    {
+        attackPoint = player.GetComponentInChildren<attack_point>(true);
+        if (attackPoint == null)
+        {
+            Debug.LogError("AttackPoint component not found in player children!");
+        }
+    }    
 
     public override void Enter()
     {
@@ -261,15 +271,23 @@ public class AirAttackState : PlayerState
         isAnimationFinished = false;
         freezeTimer = 0f;
         player.animator.Play("air_atk");
+        
+        // Freeze player briefly at the start of the attack
         player.SetVelocityX(0);
         player.SetVelocityY(0);
+        
+        // Use attack index 0 for air attack
+        attackPoint?.StartAttack(0);
     }
 
     public override void HandleInput()
     {
-        // Only allow horizontal movement during attack
+        // No input handling during the initial freeze
+        if (freezeTimer <= freezeTime) return;
+
         float inputX = Input.GetAxisRaw("Horizontal");
         player.SetVelocityX(inputX * player.MoveSpeed * 0.5f);
+        player.UpdateFacingDirection(inputX);
     }
 
     public override void LogicUpdate()
@@ -277,43 +295,46 @@ public class AirAttackState : PlayerState
         base.LogicUpdate();
         freezeTimer += Time.deltaTime;
 
+        // Check if animation is finished
+        AnimatorStateInfo stateInfo = player.animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsName("air_atk") && stateInfo.normalizedTime >= 1f)
+        {
+            // Add a small downward velocity after attack
+            player.SetVelocityY(-player.MoveSpeed * 0.5f);
+            stateMachine.ChangeState(player.fallState);
+            return;
+        }
+
+        // Keep player frozen during initial attack frames
         if (freezeTimer <= freezeTime)
         {
-            // Keep player frozen during attack
             player.SetVelocityX(0);
             player.SetVelocityY(0);
-        }
-        else if (isAnimationFinished)
-        {
-            // Transition to fall state after animation ends
-            stateMachine.ChangeState(player.fallState);
         }
     }
 
     public override void PhysicsUpdate()
     {
+        // If player somehow lands during air attack, transition to idle
         if (player.IsGrounded())
         {
             stateMachine.ChangeState(player.idleState);
         }
     }
 
-    public void AnimationTrigger_EndAttack()
-    {
-        isAnimationFinished = true;
-    }
-
     public override void Exit()
     {
         base.Exit();
         isAnimationFinished = false;
+        attackPoint?.EndAttack();
     }
 }
+
 public class DashState : PlayerState
 {
     private float dashTimeLeft;
 
-    public DashState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public DashState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
@@ -378,15 +399,12 @@ public class DashState : PlayerState
 }
 public class AttackState : PlayerState
 {
-    private int currentAttackIndex = 0;
-    private float comboTimer = 0f;
-    private float comboResetTime = 0.8f;
-    private bool canQueueNextAttack = false;
     private bool attackInProgress = false;
     private string[] attackAnimations = { "1_atk", "2_atk", "3_atk" };
     private attack_point attackPoint;
+    private bool isAnimationFinished = false;
 
-    public AttackState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine)
+    public AttackState(Player player, StateMachine stateMachine) : base(player, stateMachine)
     {
         attackPoint = player.GetComponentInChildren<attack_point>(true);
         if (attackPoint == null)
@@ -404,31 +422,14 @@ public class AttackState : PlayerState
         }
 
         base.Enter();
-        comboTimer = 0f;
-        canQueueNextAttack = false;
         attackInProgress = true;
-        currentAttackIndex = 0;
+        isAnimationFinished = false;
         PlayCurrentAttack();
     }
 
     public override void HandleInput()
     {
-        if (!attackInProgress) return;
-
-        if (canQueueNextAttack && (Input.GetKey(KeyCode.J) || Input.GetMouseButton(0)))
-        {
-            if (currentAttackIndex < attackAnimations.Length - 1)
-            {
-                if ((currentAttackIndex == 0 && player.HasSecondAttackSkill) ||
-                    (currentAttackIndex == 1 && player.HasThirdAttackSkill))
-                {
-                    currentAttackIndex++;
-                    canQueueNextAttack = false;
-                    PlayCurrentAttack();
-                    return; // Important to prevent multiple attacks in one frame
-                }
-            }
-        }
+        // Input handling is now done in the Player class
     }
 
     public override void LogicUpdate()
@@ -436,16 +437,17 @@ public class AttackState : PlayerState
         if (!attackInProgress) return;
 
         base.LogicUpdate();
-        comboTimer += Time.deltaTime;
 
-        // Only check animation finish if we're still in attack state
-        if (attackInProgress && AnimationFinished(attackAnimations[currentAttackIndex]))
+        // Get current animation progress
+        AnimatorStateInfo stateInfo = player.animator.GetCurrentAnimatorStateInfo(0);
+        float normalizedTime = stateInfo.normalizedTime % 1f;
+
+        // Check if animation is finished
+        if (normalizedTime >= 0.95f && !isAnimationFinished)
         {
-            if (!canQueueNextAttack || comboTimer > comboResetTime)
-            {
-                ResetCombo();
-                stateMachine.ChangeState(player.idleState);
-            }
+            isAnimationFinished = true;
+            ResetAttack();
+            stateMachine.ChangeState(player.idleState);
         }
     }
 
@@ -457,48 +459,30 @@ public class AttackState : PlayerState
             return;
         }
 
-        comboTimer = 0f;
-        player.animator.Play(attackAnimations[currentAttackIndex]);
+        isAnimationFinished = false;
+        player.animator.Play(attackAnimations[player.CurrentAttackIndex]);
         player.SetVelocityX(0);
-        attackPoint.StartAttack(currentAttackIndex);
+        attackPoint.StartAttack(player.CurrentAttackIndex);
     }
-    public void AnimationTrigger_CanQueueNext()
-    {
-        if (!attackInProgress) return;
-        canQueueNextAttack = true;
-    }
-    public void AnimationTrigger_EndAttack()
-    {
-        if (!attackInProgress) return;
 
-        attackInProgress = false;
-        attackPoint?.EndAttack();
-
-        if (!canQueueNextAttack || currentAttackIndex >= attackAnimations.Length - 1 || comboTimer > comboResetTime)
-        {
-            ResetCombo();
-            stateMachine.ChangeState(player.idleState);
-        }
-    }
-    private void ResetCombo()
+    private void ResetAttack()
     {
-        currentAttackIndex = 0;
-        comboTimer = 0f;
-        canQueueNextAttack = false;
         attackInProgress = false;
+        isAnimationFinished = false;
         attackPoint?.EndAttack();
     }
+
     public override void Exit()
     {
         base.Exit();
-        attackPoint?.EndAttack();
+        ResetAttack();
     }
 }
 public class TakeHitState : PlayerState
 {
     private bool animationCompleted = false;
 
-    public TakeHitState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    public TakeHitState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
@@ -513,15 +497,19 @@ public class TakeHitState : PlayerState
 
     public override void LogicUpdate()
     {
-        // Transition to DeathState if health is zero
-        if (player.Health <= 0)
+        base.LogicUpdate();
+
+        // Get the current animation state info
+        AnimatorStateInfo stateInfo = player.animator.GetCurrentAnimatorStateInfo(0);
+
+        // If the "take hit" animation has finished, transition out
+        if (stateInfo.IsName("take_hit") && stateInfo.normalizedTime >= 1f)
         {
-            stateMachine.ChangeState(player.deathState);
-        }
-        // Transition to idleState or FallState after animation completes
-        if (animationCompleted)
-        {
-            if (player.IsGrounded())
+            if (player.Health <= 0)
+            {
+                stateMachine.ChangeState(player.deathState);
+            }
+            else if (player.IsGrounded())
             {
                 stateMachine.ChangeState(player.idleState);
             }
@@ -540,22 +528,30 @@ public class TakeHitState : PlayerState
 }
 public class DeathState : PlayerState
 {
-    public DeathState(PlayerController player, StateMachine stateMachine) : base(player, stateMachine) { }
+    private bool hasRespawned = false;
+    private float deathTimer = 0f;
+
+    public DeathState(Player player, StateMachine stateMachine) : base(player, stateMachine) { }
 
     public override void Enter()
     {
-        player.animator.Play("death"); // Play "death" animation
-        player.SetVelocityX(0); // Stop movement
-        player.SetVelocityY(0); // Stop vertical movement
-    }
-
-    public override void HandleInput()
-    {
-        // Disable all input during death
+        player.animator.Play("death");
+        player.SetVelocityX(0);
+        player.SetVelocityY(0);
+        hasRespawned = false;
+        deathTimer = 0f;
     }
 
     public override void LogicUpdate()
     {
-        // No transitions from DeathState
+        // Wait for animation to finish
+        AnimatorStateInfo stateInfo = player.animator.GetCurrentAnimatorStateInfo(0);
+        deathTimer += Time.deltaTime;
+
+        if (!hasRespawned && stateInfo.IsName("death") && stateInfo.normalizedTime >= 1f)
+        {
+            hasRespawned = true;
+            player.RespawnAtLevelStart();
+        }
     }
 }

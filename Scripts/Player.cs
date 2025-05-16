@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerController : MonoBehaviour
+public class Player : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float coyoteTime = 0.1f;
     [SerializeField] private float jumpBufferTime = 0.1f;
     [SerializeField] private float fastFallSpeed = 20f;
+    [SerializeField] private float fallMultiplier = 2.5f;
 
     [Header("Dash Settings")]
     [SerializeField] private float dashSpeed = 20f;
@@ -20,14 +21,23 @@ public class PlayerController : MonoBehaviour
     [Header("Combat Settings")]
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int currentHealth;
-    [SerializeField] private bool hasSecondAttackSkill = false;
-    [SerializeField] private bool hasThirdAttackSkill = false;
 
     [Header("Ground Check")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float groundCheckDistance = 0.1f;
     [SerializeField] private Vector2 groundCheckSize = new Vector2(0.5f, 0.1f);
 
+    [Header("Respawn Settings")]
+    public Transform levelStartPoint; // Assign in Inspector
+    public float deathRespawnDelay = 2f; // Time to wait before respawn (optional)
+
+    [Header("Attack Settings")]
+    [SerializeField] private int currentAttackIndex = 0;
+    [SerializeField] private float firstAttackCooldown = 1f;
+    [SerializeField] private float secondAttackCooldown = 5f;
+    [SerializeField] private float thirdAttackCooldown = 10f;
+    private float[] lastAttackTimes = new float[3]; // Track last time each attack was used
+    public int CurrentAttackIndex => currentAttackIndex;
 
     // Components
     [HideInInspector] public Rigidbody2D rb;
@@ -55,11 +65,10 @@ public class PlayerController : MonoBehaviour
     public float DashSpeed => dashSpeed;
     public float DashTime => dashTime;
     public bool CanDash => Time.time > lastDashTime + dashCooldown;
-    public bool HasSecondAttackSkill => hasSecondAttackSkill;
-    public bool HasThirdAttackSkill => hasThirdAttackSkill;
     public int Health => currentHealth;
     public bool IsFacingRight => isFacingRight;
     public float FastFallSpeed => fastFallSpeed;
+    public float FallMultiplier => fallMultiplier;
 
     // Input buffering
     private float lastJumpInputTime;
@@ -75,6 +84,12 @@ public class PlayerController : MonoBehaviour
 
         InitializeStateMachine();
         currentHealth = maxHealth;
+
+        // Initialize attack timers
+        for (int i = 0; i < lastAttackTimes.Length; i++)
+        {
+            lastAttackTimes[i] = -100f; // Set to a large negative value so attacks are available at start
+        }
     }
 
     private void InitializeStateMachine()
@@ -97,8 +112,15 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         UpdateTimers();
+        HandleAttackInput();
         stateMachine.CurrentState.HandleInput();
         stateMachine.CurrentState.LogicUpdate();
+
+        // Test: Press P to damage the player by 1
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            TakeDamage(10);
+        }
     }
 
     private void FixedUpdate()
@@ -112,8 +134,50 @@ public class PlayerController : MonoBehaviour
         {
             lastGroundedTime = Time.time;
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            lastJumpInputTime = Time.time;
+            jumpInputConsumed = false;
+        }
     }
 
+    private void HandleAttackInput()
+    {
+        // Handle air attacks first - only J key works in air
+        if (!IsGrounded())
+        {
+            if (Input.GetKeyDown(KeyCode.J) && Time.time >= lastAttackTimes[0] + firstAttackCooldown)
+            {
+                lastAttackTimes[0] = Time.time;
+                stateMachine.ChangeState(airAttackState);
+            }
+            return; // Exit early to prevent ground attacks while in air
+        }
+
+        // Handle ground attacks only when grounded and not in an attack state
+        if (!(stateMachine.CurrentState is AttackState))
+        {
+            if (Input.GetKeyDown(KeyCode.J) && Time.time >= lastAttackTimes[0] + firstAttackCooldown)
+            {
+                lastAttackTimes[0] = Time.time;
+                currentAttackIndex = 0;
+                stateMachine.ChangeState(attackState);
+            }
+            else if (Input.GetKeyDown(KeyCode.K) && Time.time >= lastAttackTimes[1] + secondAttackCooldown)
+            {
+                lastAttackTimes[1] = Time.time;
+                currentAttackIndex = 1;
+                stateMachine.ChangeState(attackState);
+            }
+            else if (Input.GetKeyDown(KeyCode.L) && Time.time >= lastAttackTimes[2] + thirdAttackCooldown)
+            {
+                lastAttackTimes[2] = Time.time;
+                currentAttackIndex = 2;
+                stateMachine.ChangeState(attackState);
+            }
+        }
+    }
 
     #region Public Methods
 
@@ -185,6 +249,7 @@ public class PlayerController : MonoBehaviour
                 Vector3 localPos = attackPoint.transform.localPosition;
                 localPos.x = Mathf.Abs(localPos.x) * (isFacingRight ? 1 : -1);
                 attackPoint.transform.localPosition = localPos;
+                attackPoint.FlipColliders(isFacingRight);
             }
         }
     }
@@ -194,6 +259,13 @@ public class PlayerController : MonoBehaviour
         if (stateMachine.CurrentState == deathState) return;
 
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
+
+        // Update health bar UI
+        Player_Health playerHealth = GetComponent<Player_Health>();
+        if (playerHealth != null)
+        {
+            playerHealth.UpdateHealthBar(currentHealth, maxHealth);
+        }
 
         if (currentHealth <= 0)
         {
@@ -208,6 +280,12 @@ public class PlayerController : MonoBehaviour
     public void Heal(int amount)
     {
         currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
+        // Update health bar UI
+        Player_Health playerHealth = GetComponent<Player_Health>();
+        if (playerHealth != null)
+        {
+            playerHealth.Heal(0); // 0 because we've already added health
+        }
     }
 
     public void ResetDashCooldown()
@@ -215,51 +293,25 @@ public class PlayerController : MonoBehaviour
         lastDashTime = Time.time;
     }
 
-    public void UnlockSecondAttack()
-    {
-        hasSecondAttackSkill = true;
-    }
 
-    public void UnlockThirdAttack()
+    public void RespawnAtLevelStart()
     {
-        hasThirdAttackSkill = true;
+        if (levelStartPoint != null)
+        {
+            transform.position = levelStartPoint.position;
+            currentHealth = maxHealth;
+            Player_Health playerHealth = GetComponent<Player_Health>();
+            if (playerHealth != null)
+            {
+                playerHealth.UpdateHealthBar(currentHealth, maxHealth);
+            }
+            stateMachine.ChangeState(idleState);
+        }
     }
 
     #endregion
 
     #region Animation Events
-
-    [SerializeField]
-    public void AnimationTrigger_CanQueueNext()
-    {
-        Debug.Log("Animation Event: Can Queue Next"); // Debug log to verify it's being called
-        if (stateMachine.CurrentState is AttackState attackState)
-        {
-            attackState.AnimationTrigger_CanQueueNext();
-        }
-    }
-
-    [SerializeField]
-    public void AnimationTrigger_EndAttack()
-    {
-        Debug.Log("Animation Event: End Attack"); // Debug log to verify it's being called
-        if (stateMachine.CurrentState is AirAttackState airAttackState)
-        {
-            airAttackState.AnimationTrigger_EndAttack();
-            if (!IsGrounded())
-            {
-                stateMachine.ChangeState(fallState);
-            }
-            else
-            {
-                stateMachine.ChangeState(idleState);
-            }
-        }
-        else if (stateMachine.CurrentState is AttackState attackState)
-        {
-            attackState.AnimationTrigger_EndAttack();
-        }
-    }
 
     [SerializeField]
     public void AnimationTrigger_EndTakeHit()

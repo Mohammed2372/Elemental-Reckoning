@@ -2,12 +2,12 @@ using UnityEngine;
 
 public abstract class PlayerState
 {
-    protected PlayerController player;
+    protected Player player;
     protected StateMachine stateMachine;
     protected float stateTimer;
     protected bool animationTriggerCalled;
 
-    public PlayerState(PlayerController player, StateMachine stateMachine)
+    public PlayerState(Player player, StateMachine stateMachine)
     {
         this.player = player;
         this.stateMachine = stateMachine;
@@ -17,7 +17,7 @@ public abstract class PlayerState
     {
         stateTimer = 0;
         animationTriggerCalled = false;
-        Debug.Log($"Entering {GetType().Name}");
+        // Debug.Log($"Entering {GetType().Name}");
     }
 
     public virtual void Exit()
