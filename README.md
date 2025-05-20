@@ -1,6 +1,7 @@
 > **Note:** This is a demo version of Elemental Reckoning and does not represent the full story of the game.
 
-# Elemental Reckoning: Game Overview
+# Elemental Reckoning
+## Game Overview
 
 Elemental Reckoning is a single-player 2D action-adventure game where you embark on a quest to collect ten legendary elemental stones. Each stone grants control over a powerful force—Fire, Wind, Earth, Water and more. You begin by choosing one stone, which defines your unique starting abilities and combat style.
 
@@ -8,11 +9,13 @@ The remaining nine stones are guarded by powerful, corrupted elemental bosses sc
 
 Explore diverse elemental realms, face off against enemies aligned with each element, and grow stronger as you collect more stones. With no hybrid abilities or combinations, mastering each stone's individual strengths and knowing when to use them is key to your survival.
 
-# User Manual
+---
+
+## User Manual
 
 Elemental Reckoning features intuitive controls for both keyboard and gamepad. Below are the default control schemes:
 
-## Keyboard Controls
+### Keyboard Controls
 
 - **Move:** W, A, S, D
 - **Jump:** Spacebar
@@ -22,7 +25,7 @@ Elemental Reckoning features intuitive controls for both keyboard and gamepad. B
 - **Attack 3:** L (Consumes stamina)
 - **Ultimate Ability:** Q (Requires full charge)
 
-## Gamepad Controls
+### Gamepad Controls
 
 - **Move:** Left Joystick
 - **Jump:** X Button
@@ -34,21 +37,19 @@ Elemental Reckoning features intuitive controls for both keyboard and gamepad. B
 
 ---
 
-# Unity Game Project
+## Unity Game Project
 
 This is a Unity game project. Clone it, open it in Unity, and you're good to go!
 
----
+### 📦 How to Use
 
-## 📦 How to Use
-
-### 1. Clone the Repository
+#### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Mohammed2372/Game-Design-Project.git
 ```
 
-### 2. Open the Project in Unity
+#### 2. Open the Project in Unity
 
 - Open **Unity Hub**
 - Click **"Open"**
@@ -73,6 +74,8 @@ git clone https://github.com/Mohammed2372/Game-Design-Project.git
 - **Unity version:** 2022.3.9f1 or newer
 - Optional: Visual Studio or VSC for C# editing
 
+---
+
 ## Credits
 
 - Game Design & Programming: [**Mohammed Mostafa**](https://github.com/Mohammed2372), [**Ammar Qattoura**](https://github.com/Qattoura), [**Mustafa Khaled**](https://github.com/aty101)
@@ -84,6 +87,8 @@ git clone https://github.com/Mohammed2372/Game-Design-Project.git
   - [**Oak Woods**](https://brullov.itch.io/oak-woods)
   - [**Moon Graveyard**](https://anokolisa.itch.io/moon-graveyard)
 
+---
+
 ## Contact
 
 For feedback or questions, contact:
@@ -91,6 +96,8 @@ For feedback or questions, contact:
 - [**Mohammed Mostafa**](mailto:mohammedmostafa2372002@gmail.com)
 - [**Ammar Qattoura**](mailto:ammarqattouraa@gmail.com)
 - [**Mustafa Khaled**](mailto:atyaty003@gmail.com)
+
+---
 
 ## License
 
