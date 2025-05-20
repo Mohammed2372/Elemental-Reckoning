@@ -1,0 +1,70 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\SAVE\\unity\\game design project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A38104D5-CE7A-5A4D-AF57-DFEBF634375B}|Assembly-CSharp.csproj|d:\\save\\unity\\game design project\\assets\\scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A38104D5-CE7A-5A4D-AF57-DFEBF634375B}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A38104D5-CE7A-5A4D-AF57-DFEBF634375B}|Assembly-CSharp.csproj|d:\\save\\unity\\game design project\\assets\\scripts\\boss\\bossattack.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A38104D5-CE7A-5A4D-AF57-DFEBF634375B}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\boss\\bossattack.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A38104D5-CE7A-5A4D-AF57-DFEBF634375B}|Assembly-CSharp.csproj|D:\\SAVE\\unity\\game design project\\assets\\scripts\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A38104D5-CE7A-5A4D-AF57-DFEBF634375B}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\player\\player.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameManager.cs",
+              "DocumentMoniker": "D:\\SAVE\\unity\\game design project\\Assets\\Scripts\\GameManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\GameManager.cs",
+              "ToolTip": "D:\\SAVE\\unity\\game design project\\Assets\\Scripts\\GameManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\GameManager.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAzAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T17:12:23.591Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BossAttack.cs",
+              "DocumentMoniker": "D:\\SAVE\\unity\\game design project\\Assets\\Scripts\\Boss\\BossAttack.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Boss\\BossAttack.cs",
+              "ToolTip": "D:\\SAVE\\unity\\game design project\\Assets\\Scripts\\Boss\\BossAttack.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Boss\\BossAttack.cs",
+              "ViewState": "AQIAAC8BAAAAAAAAAAAIwDUBAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T09:03:01.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Player.cs",
+              "DocumentMoniker": "D:\\SAVE\\unity\\game design project\\Assets\\Scripts\\Player\\Player.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Player\\Player.cs",
+              "ToolTip": "D:\\SAVE\\unity\\game design project\\Assets\\Scripts\\Player\\Player.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Player\\Player.cs",
+              "ViewState": "AQIAAIwAAAAAAAAAAAAswDIAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-05-18T08:49:53.007Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

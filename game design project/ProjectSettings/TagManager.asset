@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Earth_Enemy
+  - coin
+  - KillZone
+  - checkpoint
+  - Target
+  - Ground
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - obstacle
+  - Water
+  - UI
+  - Ground
+  - Player
+  - Target
+  - EnemyAttack
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: background
+    uniqueID: 3083404469
+    locked: 0
+  - name: ground
+    uniqueID: 2574415749
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: forground
+    uniqueID: 1273716653
+    locked: 0
+  - name: enemies
+    uniqueID: 824094113
+    locked: 0
+  - name: Player
+    uniqueID: 351415867
+    locked: 0
+  - name: boss enemy
+    uniqueID: 4128508307
+    locked: 0

@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scripts/menuStyle.uss?fileID=7433441132597879392&amp;guid=5712dc3a6d8fa2547a88b268362d5866&amp;type=3#menuStyle" />
+    <ui:VisualElement style="height: 50%; width: 100%; -unity-background-image-tint-color: rgb(255, 255, 255); margin-left: 0; margin-right: 0; margin-top: 28%; margin-bottom: 0; background-image: none; background-color: rgba(152, 43, 29, 0); padding-top: 0; flex-direction: row;">
+        <ui:VisualElement name="start-option" style="width: 403px; height: 100%; background-color: rgba(15, 84, 243, 0); flex-grow: 1; justify-content: center;">
+            <ui:Button tabindex="-1" display-tooltip-when-elided="true" name="option-button" enable-rich-text="true" class="menu-button" style="height: 145px; margin-top: -13%; background-color: rgba(123, 111, 111, 0); margin-left: 5%; margin-right: 16%; margin-bottom: 1%; padding-right: 6px; font-size: 75px; width: 49%; background-image: url(&apos;project://database/Assets/sprites/menus/option.png?fileID=2800000&amp;guid=438a447c51c34194eb64217e92d566b1&amp;type=3#option&apos;); padding-left: 76px; padding-top: 22px;" />
+            <ui:Button tabindex="-1" display-tooltip-when-elided="true" name="start-button" class="menu-button" style="height: 43%; background-color: rgba(88, 88, 88, 0); margin-left: 5%; margin-right: 10%; margin-top: 1%; margin-bottom: 1%; font-size: 112px; width: 64%; background-image: url(&apos;project://database/Assets/sprites/menus/Start.png?fileID=2800000&amp;guid=0925300ad0bfe724fa53c4a72b9afb91&amp;type=3#Start&apos;);" />
+        </ui:VisualElement>
+        <ui:VisualElement name="quit" style="width: 17%; height: 61px; margin-top: 22%; margin-left: 527px; background-color: rgba(110, 243, 88, 0); padding-left: 0; font-size: 12%;">
+            <ui:Button tabindex="-1" display-tooltip-when-elided="false" name="quit-button" class="menu-button" style="height: 60px; background-color: rgba(88, 88, 88, 0); margin-left: 16%; margin-right: 3%; margin-top: 4%; margin-bottom: 1%; font-size: 56%; background-image: url(&apos;project://database/Assets/sprites/menus/quit.png?fileID=2800000&amp;guid=ed9408bb61899d048b61c310fc77da83&amp;type=3#quit&apos;); width: 140px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
